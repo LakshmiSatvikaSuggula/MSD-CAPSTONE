@@ -10,6 +10,11 @@ const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
 const Chat = require("./models/Chat");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const coursesRouter = require('./routes/courses');
+
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -59,17 +64,26 @@ io.on("connection", (socket) => {
 });
 
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    let folder = "courses";
+    let resource_type = "auto";
 
-// const PORT = 3000;
-// server.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
+    return {
+      folder,
+      resource_type,
+    };
+  },
+});
 
-
-
-const courseRoutes = require("./routes/courseRoutes.js");
-app.use("/api/courses", courseRoutes)
+const upload = multer({ storage })
 
 
 app.use(express.static(path.join(__dirname, "frontend")));
@@ -82,9 +96,14 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(express.urlencoded({ extended: true }))
 require("./routes/remainder");
+app.use('/api/courses', coursesRouter);
 
 
 const SECRET = "sdf9@2Kls#8hGf$1mN"
+
+
+
+
 
 mongoose.connect("mongodb://127.0.0.1:27017/elearning")
 .then(() => console.log("Database connected"))

@@ -1,18 +1,21 @@
-import mongoose from "mongoose";
+// models/Course.js
+const mongoose = require('mongoose');
 
-const courseSchema = new mongoose.Schema({
-  title: String,
-  instructor: String,
-  image: String,
-  description: String,
-  videoFiles: [String], 
-  resources: [
-    {
-      type: { type: String },
-      link: String
-    }
-  ]
+const mediaSchema = new mongoose.Schema({
+  url: String,
+  public_id: String,
+  resource_type: { type: String, enum: ['video','image','raw','auto'], default: 'auto' }
+}, { _id: false });
+
+const CourseSchema = new mongoose.Schema({
+  title: { type: String, required: true, unique: true },
+  description: { type: String, default: '' },
+  videos: [mediaSchema],   // cloudinary video objects
+  pdfs: [mediaSchema],     // resource_type: raw
+  ppts: [mediaSchema],     // resource_type: raw (or auto)
+  thumbnail: mediaSchema,
+  drive: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now }
 });
 
-const Course = mongoose.model("Course", courseSchema);
-export default Course;
+module.exports = mongoose.model('Course', CourseSchema);

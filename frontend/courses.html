@@ -1,164 +1,462 @@
 <!-- <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        .flex-container
-        {
-            display: grid;
-            grid-template-columns: repeat(4,1fr);
-            gap:30px;
-        }
-        .card
-        {
-            width:350px;
-        }
-        .flex-container img
-        {
-            width:350px;
-            height:300px;
-        }
-        .flex-container p{
-            font-size: 30px;
-       }
-       .flex-container button
-       {
-         width:100px;
-         padding:10px;
-         border-radius: 10px;
-         background-color: rgba(221, 18, 18, 0.849);
-         color:white;
-         font-size:15px;
-         margin-bottom: 70px;
-       }
-        .logo-nav {
-      display: flex;
-      gap:20px;
-      margin-bottom: 50px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      transition: background-color 0.4s, color 0.4s;
     }
+
+    .flex-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px;
+      padding: 20px;
+    }
+
+    .card {
+      width: 350px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      padding: 10px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .flex-container img {
+      width: 100%;
+      height: 250px;
+      border-radius: 10px;
+    }
+
+    .flex-container p {
+      font-size: 22px;
+      margin: 10px 0;
+    }
+
+    .flex-container button {
+      width: 150px;
+      padding: 10px;
+      border-radius: 10px;
+      background-color: rgba(221, 18, 18, 0.849);
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .flex-container button:hover {
+      background-color: rgb(255, 80, 80);
+    }
+
+    .logo-nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.747);
+      padding: 10px;
+    }
+
     .navbar {
       display: flex;
       justify-content: space-evenly;
-      background-color: rgba(0, 0, 0, 0.747);
-      width:100%;
+      flex-grow: 1;
     }
+
     .navbar a {
-      color:white;
-      padding:10px;
-      font-size: 25px;
+      color: white;
+      padding: 10px;
+      font-size: 22px;
       text-decoration: none;
     }
+
+    .navbar a:hover {
+      color: yellow;
+    }
+
     img {
-      width:100px;
-      height:50px;
+      width: 100px;
+      height: 50px;
     }
-    #toggle
-    {
-      font-size:30px;
-      color:yellow;
-      background-color: rgba(0, 0, 0, 0.014);
-      border:none
+
+    #toggle {
+      font-size: 30px;
+      color: yellow;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
     }
-    </style>
+
+    /* Modal Styling */
+    #courseModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      width: 60%;
+      max-height: 80%;
+      overflow-y: auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #closeModal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+    }
+
+    #courseContent a {
+      color: blue;
+      text-decoration: underline;
+      font-size: 18px;
+    }
+
+    #courseContent h3 {
+      margin-top: 15px;
+    }
+
+    @media (max-width: 900px) {
+      .flex-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .flex-container {
+        grid-template-columns: 1fr;
+      }
+      .modal-content {
+        width: 90%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="logo-nav">
-    <img src="logo.png">
+  <div class="logo-nav">
+    <img src="logo.png" alt="Logo">
     <nav class="navbar">
       <a href="index.html">Home</a>
       <a href="aboutus.html">About Us</a>
       <a href="contactus.html">Contact</a>
       <a href="dashboard.html">Dashboard</a>
       <div>
-        <button id="toggle">&#9728</button>
+        <button id="toggle">&#9728;</button>
       </div>
-
     </nav>
   </div>
-    <div class="flex-container">
+
+  <div class="flex-container">
     <div class="card">
-        <img src="data:image/jpeg;base64,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">
-        <p>React & Redux complete Course</p>
-        <button>Get The Course</button>
+      <img src="https://i.ytimg.com/vi/k68j9xlbHHk/hqdefault.jpg">
+      <p>React & Redux complete Course</p>
+      <button>Get The Course</button>
     </div>
     <div class="card">
-        <a href="https://ibb.co/mrHZzs3d"><img src="https://i.ibb.co/MyRwNTmK/COMPLETE-COMPUTER-NETWORKS.png" alt="COMPLETE-COMPUTER-NETWORKS" border="0"></a>
-        <p>Computer Networks</p>
-        <button>Get The Course</button>
+      <img src="https://i.ibb.co/MyRwNTmK/COMPLETE-COMPUTER-NETWORKS.png" alt="Computer Networks">
+      <p>Computer Networks</p>
+      <button>Get The Course</button>
     </div>
     <div class="card">
-        <a href="https://ibb.co/nNXKrmJs"><img src="https://i.ibb.co/B5hYL3MV/no-gimmicks.png" alt="no-gimmicks" border="0"></a>
-        <p>Thermodynamics in Physics</p>
-        <button>Get The Course</button>
+      <img src="https://i.ibb.co/B5hYL3MV/no-gimmicks.png" alt="Thermodynamics">
+      <p>Thermodynamics in Physics</p>
+      <button>Get The Course</button>
     </div>
     <div class="card">
-        <a href="https://ibb.co/sJFyvz7Y"><img src="https://i.ibb.co/Kz9FjSnv/no-gimmicks-2.png" alt="no-gimmicks-2" border="0"></a>
-        <p>Play with Numbers</p>
-        <button>Get The Course</button>
+      <img src="https://i.ibb.co/Kz9FjSnv/no-gimmicks-2.png" alt="Numbers">
+      <p>Play with Numbers</p>
+      <button>Get The Course</button>
     </div>
     <div class="card">
-        <a href="https://ibb.co/VcVm6P34"><img src="https://i.ibb.co/Kp6wn3mv/Untitled-design.png" alt="Untitled-design" border="0"></a>
-        <p>Learn Human Anatomy</p>
-        <button>Get The Course</button>
+      <img src="https://i.ibb.co/Kp6wn3mv/Untitled-design.png" alt="Anatomy">
+      <p>Learn Human Anatomy</p>
+      <button>Get The Course</button>
     </div>
     <div class="card">   
-        <a href="https://ibb.co/MDx4bH3z"><img src="https://i.ibb.co/BV5xmJSh/COMPETE-WITH-WORLD.png" alt="COMPETE-WITH-WORLD" border="0"></a>
-        <p>Daily Current Affairs</p>
-        <button>Get The Course</button>
+      <img src="https://i.ibb.co/BV5xmJSh/COMPETE-WITH-WORLD.png" alt="Current Affairs">
+      <p>Daily Current Affairs</p>
+      <button>Get The Course</button>
     </div>
     <div class="card">
-        <a href="https://ibb.co/fVH0Q3qw"><img src="https://i.ibb.co/HLqgXcB8/COMPETE-WITH-WORLD-1.png" alt="COMPETE-WITH-WORLD-1" border="0"></a>
-        <p>Keep yourself healthy</p>
-        <button>Get The Course</button>
+      <img src="https://i.ibb.co/HLqgXcB8/COMPETE-WITH-WORLD-1.png" alt="Health">
+      <p>Keep yourself healthy</p>
+      <button>Get The Course</button>
     </div>
     <div class="card">
-        <a href="https://ibb.co/xSJKrX8n"><img src="https://i.ibb.co/hRDxTL1G/COMPETE-WITH-WORLD-2.png" alt="COMPETE-WITH-WORLD-2" border="0"></a>
-        <p>Trend in Social Media</p>
-        <button>Get The Course</button>
+      <img src="https://i.ibb.co/hRDxTL1G/COMPETE-WITH-WORLD-2.png" alt="Social Media">
+      <p>Trend in Social Media</p>
+      <button>Get The Course</button>
     </div>
+  </div>
+
+  <div id="courseModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="courseTitle"></h2>
+        <button id="closeModal">&times;</button>
+      </div>
+      <div id="courseContent"></div>
     </div>
+  </div>
+
+  <script>
+    // Toggle Theme
+    const toggle = document.getElementById("toggle");
+    toggle.addEventListener("click", () => {
+      if (toggle.style.color === "yellow") {
+        toggle.style.color = "white";
+        toggle.innerHTML = "&#x1F319;";
+        document.body.style.backgroundColor = "black";
+        document.body.style.color = "white";
+      } else {
+        toggle.style.color = "yellow";
+        toggle.innerHTML = "&#9728;";
+        document.body.style.backgroundColor = "white";
+        document.body.style.color = "black";
+      }
+    });
+
+    // Course Data
+    const courseData = {
+      "React & Redux complete Course": {
+        videos: ["videos/reactredux.mp4"],
+        pdfs: ["materials/reactredux_notes.pdf"],
+        ppts: ["materials/reactredux_slides.pptx"],
+        drive: "https://drive.google.com/drive/folders/reactredux"
+      },
+      "Computer Networks": {
+        videos: ["videos/computernetworks.mp4"],
+        pdfs: ["materials/networks_notes.pdf"],
+        ppts: [],
+        drive: "https://drive.google.com/drive/folders/networks"
+      },
+      "Thermodynamics in Physics": {
+        videos: ["videos/thermodynamics.mp4"],
+        pdfs: ["materials/thermo_notes.pdf"],
+        ppts: [],
+        drive: ""
+      },
+      "Play with Numbers": {
+        videos: ["videos/numbers.mp4"],
+        pdfs: ["materials/numbers_practice.pdf"],
+        ppts: [],
+        drive: ""
+      },
+      "Learn Human Anatomy": {
+        videos: ["videos/anatomy.mp4"],
+        pdfs: [],
+        ppts: [],
+        drive: ""
+      },
+      "Daily Current Affairs": {
+        videos: ["videos/currentaffairs.mp4"],
+        pdfs: ["materials/currentaffairs.pdf"],
+        ppts: [],
+        drive: ""
+      },
+      "Keep yourself healthy": {
+        videos: ["videos/health.mp4"],
+        pdfs: [],
+        ppts: [],
+        drive: ""
+      },
+      "Trend in Social Media": {
+        videos: ["videos/socialmedia.mp4"],
+        pdfs: [],
+        ppts: [],
+        drive: ""
+      }
+    };
+
+    const modal = document.getElementById("courseModal");
+    const closeModal = document.getElementById("closeModal");
+    const courseTitle = document.getElementById("courseTitle");
+    const courseContent = document.getElementById("courseContent");
+
+    // Handle Get The Course
+    document.querySelectorAll(".card button").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const title = e.target.previousElementSibling.textContent.trim();
+        const data = courseData[title];
+
+        if (!data) {
+          alert("Resources not found for this course!");
+          return;
+        }
+
+        let html = "";
+
+        // Videos open in new tab
+        if (data.videos?.length) {
+          html += `<h3>Video Lectures:</h3>`;
+          data.videos.forEach(v => {
+            const videoName = v.split('/').pop();
+            html += `<a href="${v}" target="_blank">🎥 ${videoName}</a><br>`;
+          });
+        }
+
+        // PDFs
+        if (data.pdfs?.length) {
+          html += `<h3>PDFs:</h3>`;
+          data.pdfs.forEach(p => html += `<a href="${p}" target="_blank">${p.split('/').pop()}</a><br>`);
+        }
+
+        // PPTs
+        if (data.ppts?.length) {
+          html += `<h3>PPTs:</h3>`;
+          data.ppts.forEach(p => html += `<a href="${p}" target="_blank">${p.split('/').pop()}</a><br>`);
+        }
+
+        // Drive
+        if (data.drive) {
+          html += `<h3>Google Drive:</h3><a href="${data.drive}" target="_blank">${data.drive}</a>`;
+        }
+
+        courseTitle.textContent = title;
+        courseContent.innerHTML = html;
+        modal.style.display = "flex";
+      });
+    });
+
+    // Close Modal
+    closeModal.addEventListener("click", () => modal.style.display = "none");
+    window.addEventListener("click", (e) => {
+      if (e.target === modal) modal.style.display = "none";
+    });
+  </script>
 </body>
-<script>
-  toggle.addEventListener("click",()=>
-  {
-    if(toggle.style.color==="yellow")
-  {
-    toggle.style.color="white"
-    toggle.innerHTML="&#x1F319";
-    document.body.style.backgroundColor="black"
-  }
-  else
-  {
-    toggle.style.color="yellow";
-    toggle.innerHTML="&#9728"
-    document.body.style.backgroundColor="white"
-  }
-  })
-  
-</script>
 </html> -->
 
 
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Courses</title>
+</head>
+<body>
+  <h1>Available Courses</h1>
 
+  <div class="flex-container" id="courseList">
+    <!-- Courses will be dynamically inserted here -->
+  </div>
 
+  <!-- Modal for showing course details -->
+  <div id="courseModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+       background-color:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; border-radius:10px; width:80%; max-height:90%; overflow:auto;">
+      <h2 id="courseTitle"></h2>
+      <div id="courseContent"></div>
+      <button id="closeModal">Close</button>
+    </div>
+  </div>
 
+  <script>
+    const backendURL = "http://localhost:3000/api/courses"; // adjust if deployed
+    const courseList = document.getElementById("courseList");
+    const modal = document.getElementById("courseModal");
+    const courseTitle = document.getElementById("courseTitle");
+    const courseContent = document.getElementById("courseContent");
+    const closeModal = document.getElementById("closeModal");
 
+    // Fetch courses from backend
+    fetch(backendURL)
+      .then(res => res.json())
+      .then(courses => {
+        if (!courses.length) {
+          courseList.innerHTML = "<p>No courses available yet.</p>";
+          return;
+        }
 
+        // Create a card for each course
+        courses.forEach(course => {
+          const card = document.createElement("div");
+          card.classList.add("card");
+          card.innerHTML = `
+            <img src="${course.thumbnail?.url || 'https://via.placeholder.com/300'}" width="300">
+            <p>${course.title}</p>
+            <button>Get The Course</button>
+          `;
+          card.querySelector("button").addEventListener("click", () => showCourse(course));
+          courseList.appendChild(card);
+        });
+      })
+      .catch(err => {
+        console.error("Error fetching courses:", err);
+        courseList.innerHTML = "<p>Failed to load courses.</p>";
+      });
 
+    function showCourse(course) {
+      courseTitle.textContent = course.title;
+      let html = `<p>${course.description || ''}</p>`;
 
+      // Videos
+      if (course.videos?.length) {
+        html += `<h3>🎥 Videos:</h3>`;
+        course.videos.forEach(v => {
+          html += `<video controls width="100%">
+                     <source src="${v.url}" type="video/mp4">
+                   </video>`;
+        });
+      }
 
+      // PDFs
+      if (course.pdfs?.length) {
+        html += `<h3>📘 PDFs:</h3>`;
+        course.pdfs.forEach(p => {
+          html += `<a href="${p.url}" target="_blank">${p.url.split('/').pop()}</a><br>`;
+        });
+      }
 
+      // PPTs
+      if (course.ppts?.length) {
+        html += `<h3>📊 PPTs:</h3>`;
+        course.ppts.forEach(p => {
+          html += `<a href="${p.url}" target="_blank">${p.url.split('/').pop()}</a><br>`;
+        });
+      }
 
+      // Drive
+      if (course.drive) {
+        html += `<h3>📂 Drive Link:</h3>
+                 <a href="${course.drive}" target="_blank">${course.drive}</a>`;
+      }
 
+      courseContent.innerHTML = html;
+      modal.style.display = "flex";
+    }
 
-
-
-
-
-
-
-
-
+    closeModal.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+  </script>
+</body>
+</html>
