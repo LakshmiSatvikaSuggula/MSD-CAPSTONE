@@ -10,10 +10,10 @@ const Reminder = require("../models/Remainder");
 // Gmail SMTP 
 const transporter = nodemailer.createTransport({
     service: "gmail",
-    auth: {
-        user: "lakshmisatvikasuggula2006@gmail.com",     
-        pass: "urkv nxzx mczm urrl"                      // Gmail App Password
-    }
+     auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 
@@ -152,7 +152,7 @@ if (diffMinutes >= 1 && validReminders.length > 0) {
 }
 
     const mailOptions = {
-      from: "lakshmisatvikasuggula2006@gmail.com",
+      from: "process.env.EMAIL_USER",
       to: email,
       subject: `Jitsi Meeting Details for ${webinar}`,
       text: `Hello ${name},
