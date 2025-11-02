@@ -182,7 +182,7 @@
     let allWebinars = []; 
 async function fetchWebinars() {
   try {
-    const res = await fetch("http://localhost:3000/api/webinars/get", { headers: noCacheHeaders });
+    const res = await fetch("https://learnonthego-zhy3.onrender.com/api/webinars/get", { headers: noCacheHeaders });
     const data = await res.json();
 
     if (res.ok && data.webinars.length > 0) {
@@ -247,7 +247,7 @@ window.onload = fetchWebinars;
       const email = document.getElementById("hostEmail").value.trim();
       if (!email) return alert("Please enter host email!");
 
-      const res = await fetch("http://localhost:3000/api/webinars/verify-host", {
+      const res = await fetch("https://learnonthego-zhy3.onrender.com/api/webinars/verify-host", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -271,7 +271,7 @@ window.onload = fetchWebinars;
       const hostname = document.getElementById("hostname").value.trim();
       const hostemail = document.getElementById("hostEmail").value.trim();
 
-      const res = await fetch("http://localhost:3000/api/webinars/create", {
+      const res = await fetch("https://learnonthego-zhy3.onrender.com/api/webinars/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, description, date, time, price, hostname, hostemail }),
@@ -330,7 +330,7 @@ window.onload = fetchWebinars;
       console.log("Registering:", { name, email, webinarName, price, hostEmail });
 
       
-      const checkRes = await fetch("http://localhost:3000/api/webinars/check-registration", {
+      const checkRes = await fetch("https://learnonthego-zhy3.onrender.com/api/webinars/check-registration", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...noCacheHeaders },
         body: JSON.stringify({ email, webinar: webinarName }),
@@ -345,7 +345,7 @@ window.onload = fetchWebinars;
       
       if (price > 0) {
         localStorage.setItem("registration", JSON.stringify({ name, email, webinar: webinarName }));
-        const paymentRes = await fetch("http://localhost:3000/api/stripe/create-checkout-session", {
+        const paymentRes = await fetch("https://learnonthego-zhy3.onrender.com/api/stripe/create-checkout-session", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...noCacheHeaders },
           body: JSON.stringify({ name, email, webinar: webinarName, price }),
@@ -360,7 +360,7 @@ window.onload = fetchWebinars;
         return;
       }
 
-      const regRes = await fetch("http://localhost:3000/api/webinars/register", {
+      const regRes = await fetch("https://learnonthego-zhy3.onrender.com/api/webinars/register", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...noCacheHeaders },
         body: JSON.stringify({ name, email, webinar: webinarName }),

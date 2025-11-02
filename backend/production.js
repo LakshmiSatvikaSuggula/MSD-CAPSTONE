@@ -208,7 +208,7 @@ app.post("/forgot-password", async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const token = jwt.sign({ id: user._id }, SECRET, { expiresIn: "10m" });
-     const resetLink = `http://localhost:3000/frontend/resetpassword.html?token=${token}`;
+     const resetLink = `https://learnonthego-zhy3.onrender.com/frontend/resetpassword.html?token=${token}`;
 
     const transporter = nodemailer.createTransport({
       service: "gmail",

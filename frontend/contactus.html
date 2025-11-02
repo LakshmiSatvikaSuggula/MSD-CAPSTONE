@@ -301,7 +301,7 @@ async function response(e) {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/contact", {
+    const res = await fetch("https://learnonthego-zhy3.onrender.com/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: `${fname} ${lname}`, email, subject, message })

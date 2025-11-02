@@ -17,7 +17,7 @@
   }
 
   try {
-    const res = await fetch(`http://localhost:3000/api/webinars/verify-token?token=${encodeURIComponent(token)}`);
+    const res = await fetch(`https://learnonthego-zhy3.onrender.com/api/webinars/verify-token?token=${encodeURIComponent(token)}`);
     const data = await res.json();
     if (data.valid) {
       document.getElementById('status').innerText = 'Access granted. Redirecting to meeting...';
