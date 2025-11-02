@@ -14,7 +14,8 @@ const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const coursesRouter = require('./routes/courses');
-
+const dotenv=require('dotenv')
+dotenv.config()
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -105,9 +106,14 @@ const SECRET = "sdf9@2Kls#8hGf$1mN"
 
 
 
-mongoose.connect("mongodb://127.0.0.1:27017/elearning")
-.then(() => console.log("Database connected"))
-.catch(err => console.log(err))
+// mongoose.connect("mongodb://127.0.0.1:27017/elearning")
+// .then(() => console.log("Database connected"))
+// .catch(err => console.log(err))
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to MongoDB Atlas"))
+  .catch((err) => console.error("MongoDB connection error:", err));
+
 
 // Import models from separate files
 const Student = require("./models/Student");
