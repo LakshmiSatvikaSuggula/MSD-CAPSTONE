@@ -269,6 +269,10 @@ app.use("/api/webinars", webinarRoutes);
 app.use("/api/stripe", paymentRoutes);
 
 
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
+});
+
 
 server.listen(3000, () => {
   console.log("Server running")
