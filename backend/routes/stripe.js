@@ -28,8 +28,8 @@ router.post("/create-checkout-session", async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: "http://localhost:5500/frontend/success.html",
-      cancel_url: "http://localhost:5500/frontend/cancel.html",
+      success_url: "https://learnonthegomsd.netlify.app/success.html",
+      cancel_url: "https://learnonthegomsd.netlify.app/cancel.html",
     });
 
     res.json({ url: session.url });
