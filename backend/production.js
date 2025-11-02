@@ -265,6 +265,20 @@ app.get("/reset-password/:token", (req, res) => {
   res.sendFile(path.join(__dirname, "resetpassword.html"));
 });
 
+
+app.get("/api/news", async (req, res) => {
+  try {
+    const response = await fetch(
+      `https://newsapi.org/v2/top-headlines?country=us&pageSize=100&apiKey=${process.env.NEWS_API_KEY}`
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    res.status(500).json({ error: "Failed to fetch news" });
+  }
+});
+
 app.use("/api/webinars", webinarRoutes);
 app.use("/api/stripe", paymentRoutes);
 
