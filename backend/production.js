@@ -270,7 +270,7 @@ app.use("/api/stripe", paymentRoutes);
 
 
 app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "index.html"));
+  res.sendFile(path.join(__dirname, "../frontend", "index.html"));
 });
 
 
