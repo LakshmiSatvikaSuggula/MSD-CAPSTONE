@@ -6,6 +6,8 @@ const Host=require("../models/Host")
 const Webinar=require("../models/Webinar")
 const cron = require("node-cron");
 const Reminder = require("../models/Remainder");
+const dotenv=require("dotenv")
+dotenv.config()
 
 // Gmail SMTP 
 const transporter = nodemailer.createTransport({
@@ -152,7 +154,7 @@ if (diffMinutes >= 1 && validReminders.length > 0) {
 }
 
     const mailOptions = {
-      from: "process.env.EMAIL_USER",
+      from: process.env.EMAIL_USER,
       to: email,
       subject: `Jitsi Meeting Details for ${webinar}`,
       text: `Hello ${name},
