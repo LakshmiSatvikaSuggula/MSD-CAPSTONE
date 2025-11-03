@@ -471,6 +471,10 @@
     .search button {
       background-color: #ff7e5f;
       width: 80px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
     }
     .overlay {
       justify-content: center;
@@ -538,29 +542,8 @@
       margin-left: 30px;
       overflow-x: auto;
       display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 30px;
-    }
-    .sidebar button {
-      display: block;
-      background-color: #ff7e5f;
-      width: 90%;
-      height: 50px;
-      border-radius: 10px;
-      margin-left: 10px;
-      margin-top: 10px;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    .section-wrapper {
-      margin-bottom: 40px;
-      transition: opacity 0.5s;
-    }
-    .group-cards {
-      display: grid;
-      grid-template-columns: auto auto auto;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
-      text-align: center;
     }
     .card {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
@@ -568,6 +551,7 @@
       border-radius: 10px;
       font-size: 20px;
       padding: 10px;
+      text-align: center;
     }
     .know {
       background-color: white;
@@ -575,11 +559,9 @@
       font-size: 18px;
       border-radius: 5px;
       height: 30px;
-      margin-bottom: 10px;
+      margin-top: 10px;
       cursor: pointer;
-    }
-    .dimmed {
-      opacity: 0.6;
+      border: none;
     }
     #chatbot {
       display: none;
@@ -620,8 +602,8 @@
   </div>
 
   <div class="search">
-    <input type="text" placeholder="Search..." />
-    <button onclick="resetSearch()">Search</button>
+    <input type="text" id="searchInput" placeholder="Search groups..." />
+    <button onclick="searchGroups()">Search</button>
   </div>
 
   <div class="overlay" id="overlay">
@@ -635,11 +617,10 @@
       </select>
       <div id="message">
         <img src="team.jpeg" />
-        <span
-          >Forming a public group is a more effective way to connect with others,
-          as it allows us to reach a wider audience and welcome more diverse
-          ideas.</span
-        >
+        <span>
+          Forming a public group is a more effective way to connect with others,
+          as it allows us to reach a wider audience and welcome more diverse ideas.
+        </span>
       </div>
       <button onclick="submit()">Submit</button>
     </div>
@@ -658,28 +639,23 @@
   const overlay = document.getElementById("overlay");
   const prefer = document.getElementById("prefer");
   const message = document.getElementById("message");
-  const API_BASE = "https://learnonthego-zhy3.onrender.com"; // change to your Render URL if deployed
+  const API_BASE = "https://learnonthego-zhy3.onrender.com"; // your backend URL
 
   function openBox() {
-    overlay.style.display="flex";
+    overlay.style.display = "flex";
   }
   function closeBox() {
-    overlay.style.display="none";
+    overlay.style.display = "none";
   }
 
   prefer.addEventListener("click", () => {
-    if(prefer.value === "private") {
-      message.style.display = "block";
-    } else {
-      message.style.display = "none";
-    }
+    message.style.display = prefer.value === "private" ? "block" : "none";
   });
 
-
   async function submit() {
-    let group_name = document.getElementById("group-name").value.trim();
-    let group_founder = document.getElementById("group-founder").value.trim();
-    let group_type = document.getElementById("prefer").value;
+    const group_name = document.getElementById("group-name").value.trim();
+    const group_founder = document.getElementById("group-founder").value.trim();
+    const group_type = document.getElementById("prefer").value;
 
     if (!group_name || !group_founder) {
       alert("Please fill all required fields");
@@ -689,9 +665,7 @@
     try {
       const res = await fetch(`${API_BASE}/api/groups`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: group_name,
           founder: group_founder,
@@ -706,7 +680,7 @@
         document.getElementById("group-founder").value = "";
         prefer.value = "private";
         closeBox();
-        loadGroups(); 
+        loadGroups();
       } else {
         alert("Failed to create group");
       }
@@ -716,38 +690,43 @@
     }
   }
 
-
   async function loadGroups() {
     try {
       const res = await fetch(`${API_BASE}/api/groups`);
       const groups = await res.json();
 
-      const container = document.querySelector("#dynamic-groups");
+      const container = document.querySelector("#groupGrid");
       container.innerHTML = "";
 
       groups.forEach(g => {
         container.innerHTML += `
           <div class="card">
-            <p>${g.name}</p>
+            <p><strong>${g.name}</strong></p>
             <p>Founder: ${g.founder}</p>
             <button class="know" onclick="openChat('${g.name}')">Chat Room</button>
           </div>
         `;
       });
     } catch (err) {
-      console.error(err);
+      console.error("Error loading groups:", err);
     }
   }
-
 
   function openChat(groupName) {
     const url = `chatroom.html?group=${encodeURIComponent(groupName)}`;
     window.open(url, "_blank");
   }
 
+  function searchGroups() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    const cards = document.querySelectorAll(".card");
+    cards.forEach(card => {
+      const name = card.querySelector("p").textContent.toLowerCase();
+      card.style.display = name.includes(query) ? "block" : "none";
+    });
+  }
 
   window.onload = loadGroups;
 </script>
-
 </body>
 </html>
