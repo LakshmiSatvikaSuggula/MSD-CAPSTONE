@@ -19,7 +19,7 @@ const dotenv=require('dotenv')
 dotenv.config()
 
 app.use(cors({
-  origin: ["https://learnonthegomsd.netlify.app"],  
+  origin: ["http://localhost:5500", "https://learnonthegomsd.netlify.app"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
