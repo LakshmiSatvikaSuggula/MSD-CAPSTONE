@@ -18,12 +18,15 @@ const coursesRouter = require('./routes/courses');
 const dotenv=require('dotenv')
 dotenv.config()
 
-app.use(cors());
+app.use(cors({
+  origin: ["https://learnonthegomsd.netlify.app"],  
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
 
 const groupRoutes = require("./routes/groups");
 app.use("/api/groups", groupRoutes);
-
 
 
 const server = http.createServer(app);
