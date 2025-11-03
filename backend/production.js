@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
 
   socket.emit("previousMessages", messages);
 
-  socket.on("chatMessage", (msg) => {
+  socket.on("chatMessage", async (msg) => {
     const message = {
       id: Date.now().toString(),
       ...msg,
@@ -40,10 +40,15 @@ io.on("connection", (socket) => {
     };
     messages.push(message);
     io.emit("chatMessage", message);
-  });
+     const chat = new Chat({
+      sender: msg.sender,
+      text: msg.text,
+      createdAt: new Date(),
+    });
 
-  
-  socket.on("deleteMessage", ({ messageId, type, user, selectedUsers }) => {
+    await chat.save();
+  });
+ socket.on("deleteMessage", ({ messageId, type, user, selectedUsers }) => {
     const msg = messages.find((m) => m.id === messageId);
     if (!msg) return;
 

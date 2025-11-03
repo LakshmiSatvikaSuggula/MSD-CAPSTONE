@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -351,112 +351,8 @@
     });
   </script>
 </body>
-</html> -->
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Courses</title>
-</head>
-<body>
-  <h1>Available Courses</h1>
-
-  <div class="flex-container" id="courseList">
-    <!-- Courses will be dynamically inserted here -->
-  </div>
-
-  <!-- Modal for showing course details -->
-  <div id="courseModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-       background-color:rgba(0,0,0,0.7); justify-content:center; align-items:center;">
-    <div style="background:white; padding:20px; border-radius:10px; width:80%; max-height:90%; overflow:auto;">
-      <h2 id="courseTitle"></h2>
-      <div id="courseContent"></div>
-      <button id="closeModal">Close</button>
-    </div>
-  </div>
-
-  <script>
-    const backendURL = "https://learnonthego-zhy3.onrender.com/api/courses"; // adjust if deployed
-    const courseList = document.getElementById("courseList");
-    const modal = document.getElementById("courseModal");
-    const courseTitle = document.getElementById("courseTitle");
-    const courseContent = document.getElementById("courseContent");
-    const closeModal = document.getElementById("closeModal");
-
-    // Fetch courses from backend
-    fetch(backendURL)
-      .then(res => res.json())
-      .then(courses => {
-        if (!courses.length) {
-          courseList.innerHTML = "<p>No courses available yet.</p>";
-          return;
-        }
-
-        // Create a card for each course
-        courses.forEach(course => {
-          const card = document.createElement("div");
-          card.classList.add("card");
-          card.innerHTML = `
-            <img src="${course.thumbnail?.url || 'https://via.placeholder.com/300'}" width="300">
-            <p>${course.title}</p>
-            <button>Get The Course</button>
-          `;
-          card.querySelector("button").addEventListener("click", () => showCourse(course));
-          courseList.appendChild(card);
-        });
-      })
-      .catch(err => {
-        console.error("Error fetching courses:", err);
-        courseList.innerHTML = "<p>Failed to load courses.</p>";
-      });
-
-    function showCourse(course) {
-      courseTitle.textContent = course.title;
-      let html = `<p>${course.description || ''}</p>`;
-
-      // Videos
-      if (course.videos?.length) {
-        html += `<h3>🎥 Videos:</h3>`;
-        course.videos.forEach(v => {
-          html += `<video controls width="100%">
-                     <source src="${v.url}" type="video/mp4">
-                   </video>`;
-        });
-      }
-
-      // PDFs
-      if (course.pdfs?.length) {
-        html += `<h3>📘 PDFs:</h3>`;
-        course.pdfs.forEach(p => {
-          html += `<a href="${p.url}" target="_blank">${p.url.split('/').pop()}</a><br>`;
-        });
-      }
-
-      // PPTs
-      if (course.ppts?.length) {
-        html += `<h3>📊 PPTs:</h3>`;
-        course.ppts.forEach(p => {
-          html += `<a href="${p.url}" target="_blank">${p.url.split('/').pop()}</a><br>`;
-        });
-      }
-
-      // Drive
-      if (course.drive) {
-        html += `<h3>📂 Drive Link:</h3>
-                 <a href="${course.drive}" target="_blank">${course.drive}</a>`;
-      }
-
-      courseContent.innerHTML = html;
-      modal.style.display = "flex";
-    }
-
-    closeModal.addEventListener("click", () => {
-      modal.style.display = "none";
-    });
-  </script>
-</body>
 </html>
+
+
+
+
