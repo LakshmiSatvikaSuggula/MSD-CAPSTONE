@@ -40,13 +40,7 @@ io.on("connection", (socket) => {
     };
     messages.push(message);
     io.emit("chatMessage", message);
-     const chat = new Chat({
-      sender: msg.sender,
-      text: msg.text,
-      createdAt: new Date(),
-    });
 
-    await chat.save();
   });
  socket.on("deleteMessage", ({ messageId, type, user, selectedUsers }) => {
     const msg = messages.find((m) => m.id === messageId);
