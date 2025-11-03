@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overlay Example</title>
+  <title>Groups & Chat Room</title>
   <style>
     body {
       font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -50,8 +50,7 @@
       cursor: pointer;
       padding: 0 15px;
     }
-    .search
-    {
+    .search {
       display:flex;
       justify-content: center;
       margin-top: 100px;
@@ -99,7 +98,6 @@
     #prefer option {
       background-color: gold;
       font-size:18px;
-      font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
     }
     .form-box button ,#prefer{
       background-color: gold;
@@ -132,15 +130,6 @@
       grid-template-columns: 300px 1fr;
       gap: 30px;
     }
-    /* .sidebar {
-  position: fixed;
-  top: 0px;              
-  left: 0;            
-  width: 220px;        
-  height: 100vh;       
-  z-index:1000
-  padding-top: 20px;   
-} */
     .sidebar button {
       display:block;
       background-color: #ff7e5f;
@@ -181,8 +170,7 @@
     .dimmed {
       opacity:0.6;
     }
-     #chatbot
-    {
+     #chatbot {
       display: none;
       border:none;
       width:400px;
@@ -192,15 +180,14 @@
       right:40px;
       position: fixed;
     }
-    #chatimg
-    {
-  position: fixed;
-  bottom: 10px;    
-  right: 20px;     
-  cursor: pointer;
-  width: 60px; 
-  height: 60px;
-  border-radius: 50%;
+    #chatimg {
+      position: fixed;
+      bottom: 10px;    
+      right: 20px;     
+      cursor: pointer;
+      width: 60px; 
+      height: 60px;
+      border-radius: 50%;
     }
   </style>
 </head>
@@ -215,6 +202,7 @@
       <a href="dashboard.html">Dashboard</a>
     </nav>
   </div>
+
   <div class="hero">
     <h2>Set Your Own Place!</h2>
     <button class="create" onclick="openBox()">Create a Group</button>
@@ -224,6 +212,7 @@
       <input type="text" placeholder="Search...">
       <button onclick="resetSearch()">Search</button>
   </div>
+
   <div class="overlay" id="overlay">
     <div class="form-box">
       <button class="close" onclick="closeBox()">X</button>
@@ -253,92 +242,93 @@
       <button onclick="focusCard('economics')">Economics</button>
     </div>
     <div>
-      <!-- Science Section -->
+
+      <!-- Science -->
       <div id="science" class="section-wrapper">
         <h2>Science</h2>
         <div class="group-cards">
-          <div class="card"><p>CSE warriors</p><p>Founder: Kiara</p><button class="know">Know more</button></div>
-          <div class="card"><p>Data Science</p><p>Founder: Prahalada</p><button class="know">Know more</button></div>
-          <div class="card"><p>Chemical Masters</p><p>Founder: Palki</p><button class="know">Know more</button></div>
-          <div class="card"><p>Alpha Gems</p><p>Founder: James</p><button class="know">Know more</button></div>
+          <div class="card"><p>CSE Warriors</p><p>Founder: Kiara</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Data Science</p><p>Founder: Prahalada</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Chemical Masters</p><p>Founder: Palki</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Alpha Gems</p><p>Founder: James</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
 
-      <!-- Math Section -->
+      <!-- Math -->
       <div id="math" class="section-wrapper">
         <h2>Math</h2>
         <div class="group-cards">
-          <div class="card"><p>Number Ninjas</p><p>Founder: Arjun</p><button class="know">Know more</button></div>
-          <div class="card"><p>Pi Pirates</p><p>Founder: Maria</p><button class="know">Know more</button></div>
-          <div class="card"><p>Algebra Avengers</p><p>Founder: Victor</p><button class="know">Know more</button></div>
+          <div class="card"><p>Number Ninjas</p><p>Founder: Arjun</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Pi Pirates</p><p>Founder: Maria</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Algebra Avengers</p><p>Founder: Victor</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
 
-      <!-- Medicine Section -->
+      <!-- Medicine -->
       <div id="medicine" class="section-wrapper">
         <h2>Medicine</h2>
         <div class="group-cards">
-          <div class="card"><p>Future Surgeons</p><p>Founder: Ananya</p><button class="know">Know more</button></div>
-          <div class="card"><p>Pharma Pioneers</p><p>Founder: David</p><button class="know">Know more</button></div>
-          <div class="card"><p>Healing Hands</p><p>Founder: Sophie</p><button class="know">Know more</button></div>
+          <div class="card"><p>Future Surgeons</p><p>Founder: Ananya</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Pharma Pioneers</p><p>Founder: David</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Healing Hands</p><p>Founder: Sophie</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
 
-      <!-- Social Section -->
+      <!-- Social -->
       <div id="social" class="section-wrapper">
         <h2>Social</h2>
         <div class="group-cards">
-          <div class="card"><p>Change Makers</p><p>Founder: Rahul</p><button class="know">Know more</button></div>
-          <div class="card"><p>Peace Builders</p><p>Founder: Emma</p><button class="know">Know more</button></div>
-          <div class="card"><p>Voices United</p><p>Founder: Omar</p><button class="know">Know more</button></div>
+          <div class="card"><p>Change Makers</p><p>Founder: Rahul</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Peace Builders</p><p>Founder: Emma</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Voices United</p><p>Founder: Omar</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
 
-      <!-- Literature Section -->
+      <!-- Literature -->
       <div id="literature" class="section-wrapper">
         <h2>Literature</h2>
         <div class="group-cards">
-          <div class="card"><p>Poetry Souls</p><p>Founder: Lily</p><button class="know">Know more</button></div>
-          <div class="card"><p>Story Weavers</p><p>Founder: Ethan</p><button class="know">Know more</button></div>
-          <div class="card"><p>Dramatic Minds</p><p>Founder: Priya</p><button class="know">Know more</button></div>
+          <div class="card"><p>Poetry Souls</p><p>Founder: Lily</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Story Weavers</p><p>Founder: Ethan</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Dramatic Minds</p><p>Founder: Priya</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
 
-      <!-- Arts Section -->
+      <!-- Arts -->
       <div id="arts" class="section-wrapper">
         <h2>Arts</h2>
         <div class="group-cards">
-          <div class="card"><p>Creative Canvas</p><p>Founder: Alex</p><button class="know" onclick="window.open('/chatroom.html', '_blank')">Chat Room</button>
-</div>
-          <div class="card"><p>Color Masters</p><p>Founder: Hannah</p><button class="know">Know more</button></div>
-          <div class="card"><p>Brush & Beyond</p><p>Founder: Zayn</p><button class="know">Know more</button></div>
+          <div class="card"><p>Creative Canvas</p><p>Founder: Alex</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Color Masters</p><p>Founder: Hannah</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Brush & Beyond</p><p>Founder: Zayn</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
 
-      <!-- Ayurveda Section -->
+      <!-- Ayurveda -->
       <div id="ayurveda" class="section-wrapper">
         <h2>Ayurveda</h2>
         <div class="group-cards">
-          <div class="card"><p>Nature Healers</p><p>Founder: Riya</p><button class="know">Know more</button></div>
-          <div class="card"><p>Holistic Health</p><p>Founder: Karan</p><button class="know">Know more</button></div>
-          <div class="card"><p>Ayur Gems</p><p>Founder: Meera</p><button class="know">Know more</button></div>
+          <div class="card"><p>Nature Healers</p><p>Founder: Riya</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Holistic Health</p><p>Founder: Karan</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Ayur Gems</p><p>Founder: Meera</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
 
-      <!-- Economics Section -->
+      <!-- Economics -->
       <div id="economics" class="section-wrapper">
         <h2>Economics</h2>
         <div class="group-cards">
-          <div class="card"><p>Money Minds</p><p>Founder: Oliver</p><button class="know">Know more</button></div>
-          <div class="card"><p>Trade Titans</p><p>Founder: Aditi</p><button class="know">Know more</button></div>
-          <div class="card"><p>Future Economists</p><p>Founder: Daniel</p><button class="know">Know more</button></div>
+          <div class="card"><p>Money Minds</p><p>Founder: Oliver</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Trade Titans</p><p>Founder: Aditi</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
+          <div class="card"><p>Future Economists</p><p>Founder: Daniel</p><button class="know" onclick="window.open('chatroom.html', '_blank')">Chat Room</button></div>
         </div>
       </div>
-
     </div>
   </div>
-<iframe id="chatbot" src="chatbot.html"></iframe>
+
+  <iframe id="chatbot" src="chatbot.html"></iframe>
   <img id="chatimg" onclick="openchat()" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX0mKrzeX319CWVO-zz3O2uf9D7zdWMd_s5A&s">
+
   <script>
     const overlay = document.getElementById("overlay");
     const prefer = document.getElementById("prefer");
@@ -375,47 +365,43 @@
     }
 
     function focusCard(sid) {
-  const section = document.getElementById(sid);
-  section.scrollIntoView({behavior:"smooth"});
-}
-let search = document.querySelector(".search input");
-
-search.addEventListener("input", () => {
-  let query = search.value.toLowerCase();
-  let cards = document.querySelectorAll(".card");
-  let firstMatch = null;
-  cards.forEach(card => {
-    let cardText = card.textContent.toLowerCase();
-    if (cardText.includes(query)) {  
-      card.classList.remove("dimmed")
-      if (!firstMatch) 
-      firstMatch = card; 
-    } else {
-      card.classList.add("dimmed");
+      const section = document.getElementById(sid);
+      section.scrollIntoView({behavior:"smooth"});
     }
-    
-  });
-  if (firstMatch) {
-    firstMatch.scrollIntoView({ behavior: "smooth" });
-  }
-});
-function resetSearch() {
-  let search = document.querySelector(".search input");
-  search.value = ""; 
-  let cards = document.querySelectorAll(".card");
-  cards.forEach(card => {
-    card.classList.remove("dimmed") 
-  });
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
 
-function openchat()
-    {
-      let frame=document.getElementById("chatbot")
-      if(frame.style.display=="block")
-      frame.style.display="none"
-      else
-      frame.style.display="block"
+    let search = document.querySelector(".search input");
+
+    search.addEventListener("input", () => {
+      let query = search.value.toLowerCase();
+      let cards = document.querySelectorAll(".card");
+      let firstMatch = null;
+      cards.forEach(card => {
+        let cardText = card.textContent.toLowerCase();
+        if (cardText.includes(query)) {  
+          card.classList.remove("dimmed");
+          if (!firstMatch) firstMatch = card; 
+        } else {
+          card.classList.add("dimmed");
+        }
+      });
+      if (firstMatch) {
+        firstMatch.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
+    function resetSearch() {
+      let search = document.querySelector(".search input");
+      search.value = ""; 
+      let cards = document.querySelectorAll(".card");
+      cards.forEach(card => {
+        card.classList.remove("dimmed") 
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function openchat() {
+      let frame=document.getElementById("chatbot");
+      frame.style.display = (frame.style.display=="block") ? "none" : "block";
     }
   </script>
 </body>
