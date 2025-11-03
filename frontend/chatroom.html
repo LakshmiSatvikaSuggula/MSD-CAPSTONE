@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>💬 Student Group Chatroom</title>
+  <meta charset="utf-8" />
+  <title>Student Group Chatroom (Enhanced)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
- <meta http-equiv="Content-Security-Policy" 
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <meta http-equiv="Content-Security-Policy" 
         content="default-src 'self' https://learnonthego-zhy3.onrender.com;
                  script-src 'self' 'unsafe-inline' https://cdn.socket.io https://cdn.jsdelivr.net;
                  style-src 'self' 'unsafe-inline';
                  connect-src 'self' ws://localhost:3000 https://learnonthego-zhy3.onrender.com;
                  img-src 'self' data: blob:;">
   <style>
+    /* Original simple design kept, with tiny additions */
     body {
       font-family: "Poppins", sans-serif;
       background-image: url("chatroom.jpg");
@@ -25,26 +29,29 @@
     }
 
     #chatbox {
-      width: 450px;
-      height: 640px;
+      width: 700px;
+      height: 600px;
       background: #ffffff;
       display: flex;
       flex-direction: column;
       border-radius: 20px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
       overflow: hidden;
+      position: relative;
     }
 
     #header {
       background: linear-gradient(135deg, #43cea2, #185a9d);
       color: white;
-      padding: 18px;
-      text-align: center;
-      font-size: 20px;
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-size: 18px;
       font-weight: 600;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
+    #header .title { flex:1; text-align:left; margin-left:8px; }
+    #header .status { font-size:12px; opacity:0.95; margin-left:6px; }
 
     #messages {
       flex: 1;
@@ -64,30 +71,17 @@
       word-wrap: break-word;
       font-size: 15px;
       line-height: 1.5;
-      animation: fadeIn 0.3s ease;
       color: #222;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    .sent {
-      align-self: flex-end;
-      background-color: #dcf8c6;
-      border-bottom-right-radius: 0;
-    }
+    .sent { align-self:flex-end; background-color:#dcf8c6; border-bottom-right-radius:0; }
+    .received { align-self:flex-start; background-color:#fff; border-bottom-left-radius:0; }
 
-    .received {
-      align-self: flex-start;
-      background-color: #ffffff;
-      border-bottom-left-radius: 0;
-    }
+    .meta-row { display:flex; gap:8px; align-items:center; margin-top:8px; font-size:12px; color:#666; }
+    .ticks { font-size:12px; color:#2f9b55; }
 
-    .timestamp {
-      font-size: 11px;
-      color: #666;
-      position: absolute;
-      bottom: -16px;
-      right: 8px;
-    }
+    .reply-indicator { border-left:3px solid #ccc; padding-left:8px; margin-top:6px; color:#444; font-size:13px; }
 
     #input-area {
       display: flex;
@@ -97,229 +91,525 @@
       border-top: 1px solid #ddd;
     }
 
-    #user {
-      width: 25%;
-      margin-right: 5px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 8px;
-      font-size: 13px;
-    }
+    #user { width: 25%; margin-right: 5px; border: 1px solid #ccc; border-radius: 8px; padding: 8px; font-size: 13px; }
+    #message { flex: 1; border: 1px solid #ccc; border-radius: 8px; padding: 8px; font-size: 14px; }
 
-    #message {
-      flex: 1;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 8px;
-      font-size: 14px;
-    }
+    button { background: linear-gradient(135deg, #43cea2, #185a9d); color: white; border: none; border-radius: 8px; padding: 8px 10px; margin-left: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+    button:hover { transform: scale(1.03); }
 
-    button {
-      background: linear-gradient(135deg, #43cea2, #185a9d);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      margin-left: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
+    #messages::-webkit-scrollbar { width: 6px; }
+    #messages::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.3); border-radius: 10px; }
 
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 3px 12px rgba(24, 90, 157, 0.4);
-    }
+    .date-separator { text-align:center; margin:10px 0; color:#777; font-size:12px; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .context-menu { position:absolute; background:white; border:1px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:6px 0; z-index:999; }
+    .context-menu div { padding:8px 14px; cursor:pointer; font-size:14px; }
+    .context-menu div:hover { background:#f0f0f0; }
 
-    #messages::-webkit-scrollbar {
-      width: 6px;
-    }
+    .legend { font-size:12px; text-align:center; padding:4px; background:#f4f4f4; color:#666; border-top:1px solid #eee; }
+    .poll { background:#e8f5e9; border-radius:10px; padding:10px; margin-top:5px; }
 
-    #messages::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.3);
-      border-radius: 10px;
-    }
+    .poll .option { margin:6px 0; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .poll .bar-wrap { flex:1; margin-left:8px; background:#eaf7ef; border-radius:6px; height:10px; position:relative; overflow:hidden; }
+    .poll .bar { height:100%; background:#43cea2; border-radius:6px 0 0 6px; width:0%; transition:width 300ms; }
 
-    .date-separator {
-      text-align: center;
-      margin: 10px 0;
-      color: #777;
-      font-size: 12px;
-    }
+    #typingIndicator { font-size:13px; color:#555; padding:6px 12px; display:none; }
 
-    .context-menu {
-      position: absolute;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      padding: 5px 0;
-      z-index: 999;
-    }
+    /* simple modal center */
+    .modal-centre { display:flex; align-items:center; justify-content:center; }
 
-    .context-menu div {
-      padding: 6px 15px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .context-menu div:hover {
-      background-color: #f0f0f0;
-    }
-
-    .legend {
-      font-size: 12px;
-      text-align: center;
-      padding: 4px;
-      background: #f4f4f4;
-      color: #666;
-      border-top: 1px solid #eee;
-    }
+    /* small responsive */
+    @media (max-width:520px) { #chatbox{ width: 96%; height: 92vh; } }
   </style>
 </head>
 <body>
   <div id="chatbox">
-    <div id="header">💬 Student Group Chatroom</div>
-    <div id="messages"></div>
-
-    <div id="input-area">
-      <input id="user" placeholder="Name" />
-      <input id="message" placeholder="Type a message..." />
-      <button id="emojiBtn">😊</button>
-      <button onclick="sendMessage()">Send</button>
+    <div id="header">
+      <div style="display:flex;align-items:center;">
+        <div style="font-size:20px">💬</div>
+        <div style="margin-left:10px">
+          <div class="title">Student Group Chatroom</div>
+          <div id="onlineStatus" class="status" style="color:white;opacity:0.95;">Offline</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="themeToggle" title="Toggle dark mode" style="background:transparent;border:1px solid rgba(255,255,255,0.25);color:white;padding:6px 8px;border-radius:8px;">Dark</button>
+      </div>
     </div>
 
-    <emoji-picker id="emojiPicker" style="display:none;"></emoji-picker>
-    <div class="legend">Each user has their own chat color</div>
+    <div id="messages" aria-live="polite"></div>
+    <div id="typingIndicator">Someone is typing...</div>
+
+    <div id="input-area" role="group" aria-label="Message composer">
+      <input id="user" placeholder="Name" aria-label="Your name" />
+      <input id="message" placeholder="Type a message..." aria-label="Message input" />
+      <button id="emojiBtn" title="Emoji">😊</button>
+      <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt,audio/*" />
+      <button id="fileBtn" title="Attach file">📎</button>
+      <button id="recordBtn" title="Record voice">🎤</button>
+      <button id="pollBtn" title="Create poll">📊</button>
+      <button id="sendBtn" title="Send message">Send</button>
+    </div>
+
+    <emoji-picker id="emojiPicker" style="display:none; position:absolute; bottom:110px; right:60px;"></emoji-picker>
+    <div class="legend">You can send messages, emojis, files, polls & voice notes</div>
   </div>
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <!-- Poll Modal (up to 5 options) -->
+  <div id="pollModal" style="display:none; position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.45);" class="modal-centre">
+    <div style="background:white; padding:14px; border-radius:10px; width:340px;">
+      <h3 style="margin:6px 0 10px">Create Poll</h3>
+      <input id="pollQuestion" placeholder="Question" style="width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #ddd" />
+      <input id="pollOpt1" placeholder="Option 1" style="width:100%;padding:8px;margin-bottom:6px;border-radius:6px;border:1px solid #ddd" />
+      <input id="pollOpt2" placeholder="Option 2" style="width:100%;padding:8px;margin-bottom:6px;border-radius:6px;border:1px solid #ddd" />
+      <input id="pollOpt3" placeholder="Option 3 (optional)" style="width:100%;padding:8px;margin-bottom:6px;border-radius:6px;border:1px solid #ddd" />
+      <input id="pollOpt4" placeholder="Option 4 (optional)" style="width:100%;padding:8px;margin-bottom:6px;border-radius:6px;border:1px solid #ddd" />
+      <input id="pollOpt5" placeholder="Option 5 (optional)" style="width:100%;padding:8px;margin-bottom:6px;border-radius:6px;border:1px solid #ddd" />
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button id="createPollBtn">Create</button>
+        <button id="cancelPollBtn" style="background:#ddd;color:#333">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ctx" style="display:none; position:absolute; z-index:9999;" class="context-menu"></div>
   <script>
-    const socket = io("https://learnonthego-zhy3.onrender.com");
-    const messagesDiv = document.getElementById("messages");
-    const userInput = document.getElementById("user");
-    const messageInput = document.getElementById("message");
+  const socketUrl = "https://learnonthego-zhy3.onrender.com"; 
+  const socket = io(socketUrl);
 
-    const userColors = {};
-    const colorPalette = ["#ffb6c1", "#add8e6", "#98fb98", "#ffd700", "#ffa07a", "#d8bfd8", "#87cefa", "#f08080"];
 
-    function getUserColor(username) {
-      if (!userColors[username]) {
-        const randomColor = colorPalette[Object.keys(userColors).length % colorPalette.length];
-        userColors[username] = randomColor;
-      }
-      return userColors[username];
+  const messagesDiv = document.getElementById('messages');
+  const userInput = document.getElementById('user');
+  const messageInput = document.getElementById('message');
+  const sendBtn = document.getElementById('sendBtn');
+  const emojiPicker = document.getElementById('emojiPicker');
+  const emojiBtn = document.getElementById('emojiBtn');
+  const fileBtn = document.getElementById('fileBtn');
+  const fileInput = document.getElementById('fileInput');
+  const pollBtn = document.getElementById('pollBtn');
+  const pollModal = document.getElementById('pollModal');
+  const createPollBtn = document.getElementById('createPollBtn');
+  const cancelPollBtn = document.getElementById('cancelPollBtn');
+  const typingIndicator = document.getElementById('typingIndicator');
+  const onlineStatus = document.getElementById('onlineStatus');
+  const themeToggle = document.getElementById('themeToggle');
+  const recordBtn = document.getElementById('recordBtn');
+  const ctx = document.getElementById('ctx');
+
+  // messages: local cache
+  let messages = []; // each: {id,user,text,createdAt,status,fileUrl,fileType,fileName,poll,replyTo,edited,pinned,starred}
+  let me = localStorage.getItem('chat_name') || '';
+  userInput.value = me;
+  let lastDate = '';
+  const userColors = {};
+  const colorPalette = ["#ffb6c1","#add8e6","#98fb98","#ffd700","#ffa07a","#d8bfd8","#87cefa","#f08080"];
+
+  function uid(prefix='m'){ return prefix + Date.now() + Math.random().toString(36).slice(2,6); }
+  function timeStr(ts=Date.now()){ return new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+  function dateKey(ts=Date.now()){ return new Date(ts).toDateString(); }
+
+  function getUserColor(username) {
+    if(!username) return '#fff';
+    if(!userColors[username]) {
+      userColors[username] = colorPalette[Object.keys(userColors).length % colorPalette.length];
     }
+    return userColors[username];
+  }
 
-    socket.on("previousMessages", (oldMessages) => {
-      messagesDiv.innerHTML = "";
-      oldMessages.forEach(msg => addMessage(msg));
-    });
-
-    socket.on("chatMessage", (msg) => addMessage(msg));
-
-    socket.on("deleteMessage", ({ messageId, type }) => {
-      const msgDiv = document.querySelector(`[data-id='${messageId}']`);
-      if (msgDiv) {
-        if (type === "everyone") msgDiv.innerHTML = "<i>Message deleted for everyone</i>";
-        else msgDiv.innerHTML = "<i>Message deleted for you</i>";
-      }
-    });
-
-    function sendMessage() {
-      const user = userInput.value.trim();
-      const text = messageInput.value.trim();
-      if (!user || !text) return alert("Enter name and message!");
-      const msgData = { user, text };
-      socket.emit("chatMessage", msgData);
-      messageInput.value = "";
-    }
-
-    // Date separators
-    let lastMessageDate = "";
-    function formatDateHeader(date) {
-      const today = new Date();
-      const d = new Date(date);
-      if (today.toDateString() === d.toDateString()) return "Today";
-      const yesterday = new Date();
-      yesterday.setDate(today.getDate() - 1);
-      if (yesterday.toDateString() === d.toDateString()) return "Yesterday";
-      return d.toLocaleDateString();
-    }
-
-    function insertDateIfNeeded(date) {
-      const formatted = formatDateHeader(date);
-      if (formatted !== lastMessageDate) {
-        lastMessageDate = formatted;
-        const div = document.createElement("div");
-        div.className = "date-separator";
-        div.textContent = formatted;
-        messagesDiv.appendChild(div);
-      }
-    }
-
-    function addMessage(msg) {
-      insertDateIfNeeded(msg.createdAt || new Date());
-      const div = document.createElement("div");
-      div.classList.add("msg");
-      const currentUser = userInput.value.trim();
-      div.classList.add(msg.user === currentUser ? "sent" : "received");
-      div.style.backgroundColor = getUserColor(msg.user);
-      div.setAttribute("data-id", msg.id);
-      const time = new Date(msg.createdAt || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      div.innerHTML = `<b>${msg.user}</b><br>${msg.text}<div class="timestamp">${time}</div>`;
-
-      // Right-click to delete
-      div.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-        showContextMenu(e.pageX, e.pageY, msg.id);
-      });
-
+  // ---------- Rendering ----------
+  function insertDateIfNeeded(ts) {
+    const key = dateKey(ts);
+    if(key !== lastDate) {
+      lastDate = key;
+      const d = new Date(ts);
+      let label = d.toLocaleDateString();
+      const today = new Date(); if(today.toDateString() === d.toDateString()) label = 'Today';
+      const yesterday = new Date(); yesterday.setDate(today.getDate()-1); if(yesterday.toDateString() === d.toDateString()) label = 'Yesterday';
+      const div = document.createElement('div'); div.className='date-separator'; div.textContent = label;
       messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
+  }
 
-    // Context menu
-    function showContextMenu(x, y, messageId) {
-      const existing = document.querySelector(".context-menu");
-      if (existing) existing.remove();
+  function renderMessages() {
+    messagesDiv.innerHTML = ''; lastDate = '';
+    messages.forEach(msg => {
+      insertDateIfNeeded(msg.createdAt);
+      const el = document.createElement('div');
+      el.className = 'msg ' + ((msg.user === (userInput.value.trim() || me)) ? 'sent' : 'received');
+      el.dataset.id = msg.id;
+      el.style.backgroundColor = getUserColor(msg.user);
 
-      const menu = document.createElement("div");
-      menu.className = "context-menu";
-      menu.style.left = `${x}px`;
-      menu.style.top = `${y}px`;
-      menu.innerHTML = `
-        <div onclick="deleteMessage('${messageId}', 'me')">🗑️ Delete for Me</div>
-        <div onclick="deleteMessage('${messageId}', 'everyone')">🚫 Delete for Everyone</div>
-      `;
-      document.body.appendChild(menu);
-      document.addEventListener("click", () => menu.remove(), { once: true });
+      // header: user
+      let inner = `<div style="font-weight:600">${escapeHtml(msg.user)}${msg.edited ? ' (edited)' : ''}</div>`;
+
+      // Reply-to preview
+      if(msg.replyTo) {
+        const orig = messages.find(m => m.id === msg.replyTo);
+        if(orig) inner += `<div class="reply-indicator">${escapeHtml(orig.user)}: ${escapeHtml(orig.text || orig.fileName || '[file]')}</div>`;
+      }
+
+      // poll
+      if(msg.poll) {
+        inner += `<div class="poll"><b>${escapeHtml(msg.poll.question)}</b><div style="margin-top:8px">`;
+        const total = Object.values(msg.poll.votes || {}).reduce((a,b)=>a+b,0);
+        for(const opt of msg.poll.options) {
+          const votes = msg.poll.votes && msg.poll.votes[opt] ? msg.poll.votes[opt] : 0;
+          const pct = total ? Math.round((votes/total)*100) : 0;
+          // voters list for this option
+          const voters = (msg.poll.votersByOption && msg.poll.votersByOption[opt]) ? msg.poll.votersByOption[opt] : [];
+          inner += `<div class="option"><div style="flex:1">${escapeHtml(opt)} <small style="color:#666">(${votes})</small></div>
+                    <div style="width:60px;text-align:right"><small>${pct}%</small></div></div>
+                    <div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div>`;
+          // show voters (if any)
+          if(voters.length) {
+            inner += `<div style="font-size:12px;color:#444;margin-top:6px">Voted: ${escapeHtml(voters.join(', '))}</div>`;
+          }
+        }
+        // show vote buttons if user hasn't voted
+        const currentVoter = userInput.value.trim() || me || 'Anonymous';
+        const hasVoted = msg.poll.voters && msg.poll.voters.includes(currentVoter);
+        if(!hasVoted) {
+          inner += `<div style="margin-top:8px">${msg.poll.options.map(o=>`<button class="pollVoteBtn" data-mid="${msg.id}" data-opt="${escapeAttr(o)}">${escapeHtml(o)}</button>`).join(' ')}</div>`;
+        } else {
+          inner += `<div style="margin-top:8px;color:#666;font-size:13px">You have voted.</div>`;
+        }
+        inner += `</div></div>`;
+      }
+      // file message
+      else if(msg.fileUrl) {
+        if(msg.fileType && msg.fileType.startsWith('image/')) {
+          inner += `<div style="margin-top:6px"><img src="${msg.fileUrl}" style="max-width:200px;border-radius:10px" /></div>`;
+        } else if(msg.fileType && msg.fileType.startsWith('audio/')) {
+          // simple file playback: audio control
+          inner += `<div style="margin-top:6px"><audio controls src="${msg.fileUrl}"></audio></div>`;
+        } else {
+          inner += `<div style="margin-top:6px"><a href="${msg.fileUrl}" target="_blank">📎 ${escapeHtml(msg.fileName || 'file')}</a></div>`;
+        }
+      } else {
+        inner += `<div style="margin-top:6px">${escapeHtml(msg.text)}</div>`;
+      }
+
+      // meta row
+      const ticks = (msg.user === (userInput.value.trim() || me)) ? ( msg.status === 'seen' ? '✓✓' : (msg.status === 'delivered' ? '✓✓' : '✓') ) : '';
+      inner += `<div class="meta-row"><span class="timestamp">${timeStr(msg.createdAt)}</span>`;
+      if(ticks) inner += `<span class="ticks">${ticks}</span>`;
+      if(msg.pinned) inner += `<span class="muted"> · 📌</span>`;
+      if(msg.starred) inner += `<span class="muted"> · ⭐</span>`;
+      inner += `</div>`;
+
+      el.innerHTML = inner;
+
+      // right-click context menu
+      el.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenu(e.pageX, e.pageY, msg.id); });
+
+      messagesDiv.appendChild(el);
+    });
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // attach poll vote button handlers after render
+    document.querySelectorAll('.pollVoteBtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mid = btn.dataset.mid;
+        const opt = btn.dataset.opt;
+        votePoll(mid, opt);
+      });
+    });
+  }
+
+  function escapeHtml(s){ if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escapeAttr(s){ if(!s) return ''; return s.replace(/"/g,'&quot;').replace(/'/g,"&#39;"); }
+
+  // ---------- Sending ----------
+
+  function sendMessage() {
+    const user = userInput.value.trim() || me || 'Anonymous';
+    if(!userInput.value.trim()) { userInput.value = user; localStorage.setItem('chat_name', user); me = user; }
+    const replyTo = messageInput.dataset.replyTo || null;
+    const text = messageInput.value.trim();
+    if(!text) return alert('Enter a message or attach a file');
+    const msg = { id: uid(), user, text, createdAt: Date.now(), status:'sent', replyTo };
+    messages.push(msg);
+    renderMessages();
+    messageInput.value = '';
+    delete messageInput.dataset.replyTo;
+
+    // simulate status updates
+    setTimeout(()=> { msg.status = 'delivered'; renderMessages(); socket.emit('messageStatus',{messageId:msg.id,status:'delivered'}); }, 400);
+    setTimeout(()=> { msg.status = 'seen'; renderMessages(); socket.emit('messageStatus',{messageId:msg.id,status:'seen'}); }, 1200);
+
+    socket.emit('chatMessage', msg);
+  }
+  sendBtn.addEventListener('click', sendMessage);
+  messageInput.addEventListener('keypress', e => {
+    if(e.key === 'Enter') sendMessage();
+    else socket.emit('typing', { user: userInput.value.trim() || me || 'Anonymous' });
+  });
+
+  // ---------- Emoji ----------
+  emojiBtn.addEventListener('click', ()=> {
+    emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+  });
+  emojiPicker.addEventListener('emoji-click', ev => {
+    messageInput.value += ev.detail.unicode;
+    emojiPicker.style.display = 'none';
+  });
+
+  // ---------- File attach (with upload attempt) ----------
+  fileBtn.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', async e => {
+    const f = e.target.files[0];
+    if(!f) return;
+    const user = userInput.value.trim() || me || 'Anonymous';
+    const msg = { id: uid(), user, createdAt: Date.now(), status:'sent', fileUrl:'', fileType: f.type, fileName: f.name };
+    messages.push(msg); renderMessages();
+
+    try {
+      const fd = new FormData(); fd.append('file', f); fd.append('user', user);
+      const r = await fetch(`${socketUrl}/upload`, { method:'POST', body: fd });
+      const data = await r.json();
+      msg.fileUrl = data.fileUrl || URL.createObjectURL(f);
+    } catch(err) {
+      msg.fileUrl = URL.createObjectURL(f);
     }
+    renderMessages();
+    socket.emit('chatMessage', msg);
+  });
 
-    function deleteMessage(messageId, type) {
-      const user = userInput.value.trim();
-      socket.emit("deleteMessage", { messageId, type, user });
+  // ---------- Poll creation ----------
+  pollBtn.addEventListener('click', ()=> pollModal.style.display = 'flex');
+  cancelPollBtn.addEventListener('click', ()=> pollModal.style.display = 'none');
+  createPollBtn.addEventListener('click', ()=> {
+    const q = document.getElementById('pollQuestion').value.trim();
+    const opts = [];
+    ['pollOpt1','pollOpt2','pollOpt3','pollOpt4','pollOpt5'].forEach(id=>{ const v = document.getElementById(id).value.trim(); if(v) opts.push(v); });
+    if(!q) return alert('Enter a poll question');
+    if(opts.length < 2) return alert('Add at least two options');
+    const user = userInput.value.trim() || me || 'Anonymous';
+    const poll = { id: uid('p'), question: q, options: opts, votes: {}, voters: [], votersByOption: {} };
+    // initialize zeros
+    opts.forEach(o => { poll.votes[o] = 0; poll.votersByOption[o] = []; });
+    const msg = { id: uid(), user, createdAt: Date.now(), status:'sent', poll };
+    messages.push(msg); renderMessages();
+    pollModal.style.display = 'none';
+    // clear fields
+    ['pollQuestion','pollOpt1','pollOpt2','pollOpt3','pollOpt4','pollOpt5'].forEach(id=>document.getElementById(id).value = '');
+    socket.emit('chatMessage', msg);
+  });
+
+  // vote (prevent double voting)
+  function votePoll(messageId, option) {
+    const msg = messages.find(m => m.id === messageId);
+    if(!msg || !msg.poll) return;
+    const voter = userInput.value.trim() || me || 'Anonymous';
+    if(msg.poll.voters && msg.poll.voters.includes(voter)) return alert('You already voted');
+    // register vote
+    msg.poll.votes[option] = (msg.poll.votes[option] || 0) + 1;
+    msg.poll.voters = msg.poll.voters || []; msg.poll.voters.push(voter);
+    msg.poll.votersByOption = msg.poll.votersByOption || {}; msg.poll.votersByOption[option] = msg.poll.votersByOption[option] || []; msg.poll.votersByOption[option].push(voter);
+    renderMessages();
+    socket.emit('pollVote', { messageId, option, user: voter });
+  }
+  // expose for poll button handlers
+  window.votePoll = votePoll;
+
+
+  let typingTimeout = null;
+  socket.on('typing', d => {
+    typingIndicator.textContent = `${d.user} is typing...`;
+    typingIndicator.style.display = 'block';
+    if(typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(()=> { typingIndicator.style.display = 'none'; }, 1200);
+  });
+
+  
+  socket.on('connect', ()=> {
+    onlineStatus.textContent = 'Online';
+    const who = userInput.value.trim() || me || 'Anonymous';
+    socket.emit('presence', { user: who, status:'online' });
+  });
+  socket.on('disconnect', ()=> onlineStatus.textContent = 'Offline');
+
+  
+  socket.on('previousMessages', arr => {
+    if(Array.isArray(arr)) {
+      arr.forEach(m => { if(!messages.some(x=>x.id===m.id)) messages.push(m); });
+      renderMessages();
     }
+  });
+  socket.on('chatMessage', m => {
+    if(!messages.some(x=>x.id===m.id)) {
+      // ensure poll structures (defensive)
+      if(m.poll) {
+        m.poll.votes = m.poll.votes || {}; m.poll.voters = m.poll.voters || []; m.poll.votersByOption = m.poll.votersByOption || {};
+      }
+      messages.push(m);
+      renderMessages();
+      // ack statuses
+      socket.emit('messageStatus', { messageId: m.id, status:'delivered' });
+      setTimeout(()=> socket.emit('messageStatus',{messageId:m.id,status:'seen'}), 1400);
+    }
+  });
+  socket.on('messageStatus', ({messageId,status}) => {
+    const mm = messages.find(x=>x.id===messageId); if(mm) { mm.status = status; renderMessages(); }
+  });
+  socket.on('deleteMessage', ({messageId, type}) => {
+    if(type === 'everyone') messages = messages.filter(m=>m.id!==messageId);
+    else messages = messages.filter(m=>m.id!==messageId);
+    renderMessages();
+  });
+  socket.on('editMessage', ({messageId,newText}) => {
+    const mm = messages.find(m=>m.id===messageId); if(mm){ mm.text = newText; mm.edited = true; renderMessages(); }
+  });
+  socket.on('pollVote', ({messageId, option, user}) => {
+    const mm = messages.find(m=>m.id===messageId); if(!mm || !mm.poll) return;
+    mm.poll.votes[option] = (mm.poll.votes[option]||0) + 1;
+    mm.poll.voters = mm.poll.voters || []; if(!mm.poll.voters.includes(user)) mm.poll.voters.push(user);
+    mm.poll.votersByOption = mm.poll.votersByOption || {}; mm.poll.votersByOption[option] = mm.poll.votersByOption[option] || []; if(!mm.poll.votersByOption[option].includes(user)) mm.poll.votersByOption[option].push(user);
+    renderMessages();
+  });
 
+  // ---------- Context menu & actions ----------
+  function showContextMenu(x,y,msgId) {
+    const m = messages.find(mm=>mm.id===msgId); if(!m) return;
+    ctx.style.left = x + 'px'; ctx.style.top = y + 'px'; ctx.style.display = 'block'; ctx.innerHTML = '';
+    const items = [];
+    items.push({k:'reply', t:'Reply'});
+    if(m.user === (userInput.value.trim() || me)) items.push({k:'edit', t:'Edit'});
+    items.push({k:'deleteMe', t:'Delete for Me'});
+    if(m.user === (userInput.value.trim() || me)) items.push({k:'deleteEveryone', t:'Delete for Everyone'});
+    items.push({k:'forward', t:'Forward'});
+    items.push({k:'pin', t: m.pinned ? 'Unpin' : 'Pin'});
+    items.push({k:'star', t: m.starred ? 'Unstar' : 'Star'});
+    items.forEach(it => {
+      const el = document.createElement('div'); el.textContent = it.t;
+      el.addEventListener('click', ()=> { ctx.style.display='none'; handleAction(it.k, msgId); });
+      ctx.appendChild(el);
+    });
+    document.addEventListener('click', ()=> ctx.style.display='none', { once:true });
+  }
 
-    const emojiPicker = document.getElementById("emojiPicker");
-    const emojiBtn = document.getElementById("emojiBtn");
-    emojiBtn.addEventListener("click", () => {
-      emojiPicker.style.display = emojiPicker.style.display === "none" ? "block" : "none";
-    });
-    emojiPicker.addEventListener("emoji-click", (event) => {
-      messageInput.value += event.detail.unicode;
-      emojiPicker.style.display = "none";
-    });
+  function handleAction(action, messageId) {
+    const idx = messages.findIndex(m => m.id === messageId); if(idx < 0) return;
+    const m = messages[idx];
+    if(action === 'reply') { messageInput.dataset.replyTo = messageId; messageInput.focus(); messageInput.placeholder = `Replying to ${m.user}...`; }
+    else if(action === 'edit') {
+      if(m.user !== (userInput.value.trim() || me)) return alert('You can only edit your messages');
+      const newText = prompt('Edit message', m.text || '');
+      if(newText !== null) { m.text = newText; m.edited = true; renderMessages(); socket.emit('editMessage',{messageId, newText}); }
+    }
+    else if(action === 'deleteMe') { messages.splice(idx,1); renderMessages(); }
+    else if(action === 'deleteEveryone') { messages.splice(idx,1); renderMessages(); socket.emit('deleteMessage',{messageId, type:'everyone'}); }
+    else if(action === 'forward') {
+      const to = prompt('Forward to (chat/group) — local demo only: enter group name and message will be duplicated locally');
+      if(!to) return;
+      const copy = JSON.parse(JSON.stringify(m)); copy.id = uid(); copy.user = userInput.value.trim() || me || 'Anonymous'; copy.createdAt = Date.now();
+      messages.push(copy); renderMessages(); socket.emit('forwardMessage',{originalId:messageId, newMessage:copy, to});
+      alert('Forwarded (demo).');
+    }
+    else if(action === 'pin') { m.pinned = !m.pinned; renderMessages(); }
+    else if(action === 'star') { m.starred = !m.starred; renderMessages(); }
+  }
 
-    messageInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") sendMessage();
-    });
+  // ---------- Voice recording (simple file playback) ----------
+  let recorder = null; let recordedChunks = [];
+  recordBtn.addEventListener('click', async () => {
+    if(recorder && recorder.state === 'recording') { recorder.stop(); recordBtn.textContent = '🎤'; return; }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert('Recording not supported');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recorder = new MediaRecorder(stream);
+      recordedChunks = [];
+      recorder.ondataavailable = e => recordedChunks.push(e.data);
+      recorder.onstop = async () => {
+        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+        const user = userInput.value.trim() || me || 'Anonymous';
+        const msg = { id: uid(), user, createdAt: Date.now(), status:'sent', fileUrl:'', fileType: blob.type, fileName: 'voice.webm' };
+        messages.push(msg); renderMessages();
+        // attempt upload; fallback to object URL
+        try {
+          const fd = new FormData(); fd.append('file', blob, 'voice.webm'); fd.append('user', user);
+          const res = await fetch(`${socketUrl}/upload`, { method:'POST', body: fd });
+          const data = await res.json();
+          msg.fileUrl = data.fileUrl || URL.createObjectURL(blob);
+        } catch(err) {
+          msg.fileUrl = URL.createObjectURL(blob);
+        }
+        renderMessages();
+        socket.emit('chatMessage', msg);
+      };
+      recorder.start();
+      recordBtn.textContent = '⏹️';
+      alert('Recording... click mic again to stop.');
+    } catch(err) {
+      alert('Microphone access denied or unavailable');
+    }
+  });
+
+  // ---------- Theme toggle (simple) ----------
+  let dark = false;
+  themeToggle.addEventListener('click', ()=> {
+    dark = !dark;
+    themeToggle.textContent = dark ? 'Light' : 'Dark';
+    if(dark) {
+      document.body.style.filter = 'brightness(0.85)';
+      document.getElementById('chatbox').style.background = '#0f1b1b';
+      document.getElementById('messages').style.background = '#071012';
+    } else {
+      document.body.style.filter = '';
+      document.getElementById('chatbox').style.background = '#ffffff';
+      document.getElementById('messages').style.background = '#f7f7f7';
+    }
+  });
+
+  // ---------- Small demo seed for quick testing ----------
+  (function seed(){
+    if(messages.length === 0){
+      messages.push({ id: uid(), user:'Alice', text:'Welcome — enhanced polls & voice here!', createdAt: Date.now() - 1000*60*60*24, status:'seen' });
+      messages.push({ id: uid(), user:'Bob', text:'Try creating a poll or record a short voice note.', createdAt: Date.now() - 1000*60*30, status:'delivered' });
+      renderMessages();
+    }
+  })();
+
+  // ---------- Helper: listening to server (best-effort) ----------
+  socket.on('previousMessages', arr => { if(Array.isArray(arr)) { arr.forEach(m=>{ if(!messages.some(x=>x.id===m.id)) messages.push(m); }); renderMessages(); }});
+  socket.on('chatMessage', m => { if(!messages.some(x=>x.id===m.id)) { messages.push(m); renderMessages(); socket.emit('messageStatus',{messageId:m.id,status:'delivered'}); setTimeout(()=>socket.emit('messageStatus',{messageId:m.id,status:'seen'}),1400); }});
+  socket.on('messageStatus', ({messageId,status}) => { const mm = messages.find(x=>x.id===messageId); if(mm){ mm.status = status; renderMessages(); }});
+  socket.on('deleteMessage', ({messageId}) => { messages = messages.filter(m=>m.id!==messageId); renderMessages(); });
+  socket.on('editMessage', ({messageId,newText}) => { const mm = messages.find(m=>m.id===messageId); if(mm){ mm.text = newText; mm.edited = true; renderMessages(); }});
+  socket.on('pollVote', ({messageId, option, user}) => { const mm = messages.find(m=>m.id===messageId); if(!mm||!mm.poll) return; mm.poll.votes[option] = (mm.poll.votes[option]||0)+1; mm.poll.voters = mm.poll.voters||[]; if(!mm.poll.voters.includes(user)) mm.poll.voters.push(user); mm.poll.votersByOption = mm.poll.votersByOption||{}; mm.poll.votersByOption[option] = mm.poll.votersByOption[option]||[]; if(!mm.poll.votersByOption[option].includes(user)) mm.poll.votersByOption[option].push(user); renderMessages(); });
+
+  // ---------- small utilities ----------
+  function votePoll(mid, option) { votePoll; } // placeholder overwritten below (to avoid lint issues)
+
+  // expose sendMessage for any old inline calls
+  window.sendMessage = sendMessage;
+
+  // close poll modal on backdrop click
+  pollModal.addEventListener('click', e => { if(e.target === pollModal) pollModal.style.display = 'none'; });
+
+  // context menu hide on scroll/resize
+  window.addEventListener('scroll', ()=> ctx.style.display='none');
+  window.addEventListener('resize', ()=> ctx.style.display='none');
+
+  // accessibility: save name
+  userInput.addEventListener('change', ()=> { localStorage.setItem('chat_name', userInput.value.trim()); me = userInput.value.trim(); });
+
+  // re-declare votePoll here to capture scope
+  function votePoll(messageId, option) {
+    const msg = messages.find(m=>m.id===messageId);
+    if(!msg || !msg.poll) return;
+    const voter = userInput.value.trim() || me || 'Anonymous';
+    if(msg.poll.voters && msg.poll.voters.includes(voter)) return alert('You already voted');
+    msg.poll.votes[option] = (msg.poll.votes[option] || 0) + 1;
+    msg.poll.voters = msg.poll.voters || []; msg.poll.voters.push(voter);
+    msg.poll.votersByOption = msg.poll.votersByOption || {}; msg.poll.votersByOption[option] = msg.poll.votersByOption[option] || []; msg.poll.votersByOption[option].push(voter);
+    renderMessages();
+    socket.emit('pollVote', { messageId, option, user: voter });
+  }
+  window.votePoll = votePoll;
+
+  // ----------------- End -----------------
   </script>
 </body>
 </html>

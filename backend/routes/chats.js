@@ -1,24 +1,36 @@
-const express = require('express');
+// routes/chat.js
+const express = require("express");
 const router = express.Router();
-const Chat = require('../models/Chat');
+const Group = require("../models/Group");
+const Message = require("../models/Message");
 
-// GET messages for a specific group
-router.get('/:group', async (req, res) => {
+// 1️⃣ Create a new group
+router.post("/groups", async (req, res) => {
   try {
-    const chats = await Chat.find({ group: req.params.group }).sort({ createdAt: 1 });
-    res.json(chats);
+    const newGroup = new Group(req.body);
+    await newGroup.save();
+    res.status(201).json({ message: "Group created!", data: newGroup });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST a new message for a group
-router.post('/', async (req, res) => {
+// 2️⃣ Send a chat message
+router.post("/messages", async (req, res) => {
   try {
-    const { group, sender, message } = req.body;
-    const chat = new Chat({ group, sender, message });
-    await chat.save();
-    res.json(chat);
+    const newMessage = new Message(req.body);
+    await newMessage.save();
+    res.status(201).json({ message: "Message saved!", data: newMessage });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3️⃣ Fetch messages for a group
+router.get("/messages/:group", async (req, res) => {
+  try {
+    const messages = await Message.find({ group: req.params.group });
+    res.json(messages);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

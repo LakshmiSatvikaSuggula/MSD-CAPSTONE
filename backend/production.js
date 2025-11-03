@@ -11,55 +11,82 @@ const http = require("http");
 const { Server } = require("socket.io");
 const Chat = require("./models/Chat");
 const multer = require("multer");
+const Message = require('./models/Message');
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const coursesRouter = require('./routes/courses');
 const dotenv=require('dotenv')
 dotenv.config()
 
+app.use(cors());
+app.use(express.json());
+
+const groupRoutes = require("./routes/groups");
+app.use("/api/groups", groupRoutes);
+
+
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",   // you can restrict later to your frontend domain
+    origin: "*",  
     methods: ["GET", "POST"]
   }
 });
 
-let messages = [];
+const storage1 = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+});
+const upload = multer({ storage1 });
 
-io.on("connection", (socket) => {
-  console.log("User connected");
+// File upload route
+app.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  res.json({ fileUrl: `/uploads/${req.file.filename}` });
+});
 
-  socket.emit("previousMessages", messages);
 
-  socket.on("chatMessage", (msg) => {
-    const message = {
-      id: Date.now().toString(),
-      ...msg,
-      createdAt: new Date(),
-    };
-    messages.push(message);
-    io.emit("chatMessage", message);
+io.on('connection', async (socket) => {
+  console.log('User connected');
+
+  
+  const allMessages = await Message.find().sort({ createdAt: 1 });
+  socket.emit('previousMessages', allMessages);
+
+
+  socket.on('chatMessage', async (msg) => {
+    const newMsg = new Message(msg);
+    await newMsg.save();
+    io.emit('chatMessage', msg);
   });
- socket.on("deleteMessage", ({ messageId, type, user, selectedUsers }) => {
-    const msg = messages.find((m) => m.id === messageId);
-    if (!msg) return;
 
-    if (type === "everyone") {
-      msg.text = "This message was deleted";
-      io.emit("messageDeleted", { messageId, forEveryone: true });
-    } else if (type === "me") {
-      socket.emit("messageDeleted", { messageId, forMe: true });
-    } else if (type === "specific" && selectedUsers?.length > 0) {
-      selectedUsers.forEach((userSocketId) => {
-        io.to(userSocketId).emit("messageDeleted", { messageId, specific: true });
-      });
+ 
+  socket.on('pollVote', async ({ messageId, option, user }) => {
+    const msg = await Message.findOne({ id: messageId });
+    if (msg && msg.poll) {
+      msg.poll.votes.set(option, (msg.poll.votes.get(option) || 0) + 1);
+      if (!msg.poll.voters.includes(user)) msg.poll.voters.push(user);
+      if (!msg.poll.votersByOption.has(option)) msg.poll.votersByOption.set(option, []);
+      msg.poll.votersByOption.get(option).push(user);
+      await msg.save();
+      io.emit('pollVote', { messageId, option, user });
     }
   });
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
+  
+  socket.on('editMessage', async ({ messageId, newText }) => {
+    await Message.updateOne({ id: messageId }, { text: newText, edited: true });
+    io.emit('editMessage', { messageId, newText });
   });
+
+  
+  socket.on('deleteMessage', async ({ messageId }) => {
+    await Message.deleteOne({ id: messageId });
+    io.emit('deleteMessage', { messageId, type: 'everyone' });
+  });
+
+  socket.on('disconnect', () => console.log('User disconnected'));
 });
 
 
@@ -81,8 +108,6 @@ const storage = new CloudinaryStorage({
     };
   },
 });
-
-const upload = multer({ storage })
 
 
 app.use(express.static(path.join(__dirname, "frontend")));

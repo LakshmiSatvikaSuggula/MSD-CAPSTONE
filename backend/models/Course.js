@@ -44,7 +44,7 @@ const CourseSchema = new mongoose.Schema({
   thumbnail: mediaSchema,
   drive: { type: String, default: '' },
 
-  // ✅ Relationships
+  
   host: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Host', 
